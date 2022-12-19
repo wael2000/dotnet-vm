@@ -1,0 +1,137 @@
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  annotations:
+    kubemacpool.io/transaction-timestamp: "2022-12-18T16:47:55.802892479Z"
+    kubevirt.io/latest-observed-api-version: v1
+    kubevirt.io/storage-observed-api-version: v1alpha3
+    name.os.template.kubevirt.io/rhel8.5: Red Hat Enterprise Linux 8.0 or higher
+    vm.kubevirt.io/validations: |
+      [
+        {
+          "name": "minimal-required-memory",
+          "path": "jsonpath::.spec.domain.resources.requests.memory",
+          "rule": "integer",
+          "message": "This VM requires more memory.",
+          "min": 1610612736
+        }
+      ]
+  creationTimestamp: "2022-12-18T14:40:24Z"
+  generation: 3
+  labels:
+    app: dotnet-vm
+    flavor.template.kubevirt.io/small: "true"
+    os.template.kubevirt.io/rhel8.5: "true"
+    vm.kubevirt.io/template: rhel8-server-small
+    vm.kubevirt.io/template.namespace: openshift
+    vm.kubevirt.io/template.revision: "1"
+    vm.kubevirt.io/template.version: v0.19.6
+    workload.template.kubevirt.io/server: "true"
+  name: dotnet-vm
+  namespace: demo
+  resourceVersion: "3622665"
+  uid: 60796602-6e1c-4c76-b03f-8f683bae2999
+spec:
+  dataVolumeTemplates:
+  - apiVersion: cdi.kubevirt.io/v1beta1
+    kind: DataVolume
+    metadata:
+      creationTimestamp: null
+      name: dotnet-vm
+    spec:
+      source:
+        pvc:
+          name: rhel8-13b024fed1a3
+          namespace: openshift-virtualization-os-images
+      storage:
+        accessModes:
+        - ReadWriteMany
+        resources:
+          requests:
+            storage: "32212254720"
+        storageClassName: ocs-storagecluster-ceph-rbd
+        volumeMode: Block
+  running: true
+  template:
+    metadata:
+      annotations:
+        vm.kubevirt.io/flavor: small
+        vm.kubevirt.io/os: rhel8
+        vm.kubevirt.io/workload: server
+      creationTimestamp: null
+      labels:
+        env: dotnet
+        flavor.template.kubevirt.io/small: "true"
+        kubevirt.io/domain: dotnet-vm
+        kubevirt.io/size: small
+        os.template.kubevirt.io/rhel8.5: "true"
+        vm.kubevirt.io/name: dotnet-vm
+        workload.template.kubevirt.io/server: "true"
+    spec:
+      domain:
+        cpu:
+          cores: 1
+          sockets: 1
+          threads: 1
+        devices:
+          disks:
+          - bootOrder: 1
+            disk:
+              bus: virtio
+            name: dotnet-vm
+          - disk:
+              bus: virtio
+            name: cloudinitdisk
+          interfaces:
+          - macAddress: 02:c3:0a:00:00:02
+            masquerade: {}
+            name: default
+            ports:
+            - port: 5000
+          networkInterfaceMultiqueue: true
+          rng: {}
+        machine:
+          type: pc-q35-rhel8.4.0
+        resources:
+          requests:
+            memory: 2Gi
+      evictionStrategy: LiveMigrate
+      hostname: dotnet-vm
+      networks:
+      - name: default
+        pod: {}
+      terminationGracePeriodSeconds: 180
+      volumes:
+      - dataVolume:
+          name: dotnet-vm
+        name: dotnet-vm
+      - cloudInitNoCloud:
+          userData: |-
+            #cloud-config
+            user: cloud-user
+            password: da2x-dcwa-nn1s
+            chpasswd: { expire: False }
+        name: cloudinitdisk
+status:
+  conditions:
+  - lastProbeTime: null
+    lastTransitionTime: "2022-12-18T16:48:28Z"
+    status: "True"
+    type: Ready
+  - lastProbeTime: null
+    lastTransitionTime: null
+    status: "True"
+    type: LiveMigratable
+  - lastProbeTime: "2022-12-18T16:48:52Z"
+    lastTransitionTime: null
+    status: "True"
+    type: AgentConnected
+  created: true
+  printableStatus: Running
+  ready: true
+  volumeSnapshotStatuses:
+  - enabled: true
+    name: dotnet-vm
+  - enabled: false
+    name: cloudinitdisk
+    reason: Snapshot is not supported for this volumeSource type [cloudinitdisk]
